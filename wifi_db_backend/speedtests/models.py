@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from django.conf import settings
 
-from wifi_db_backend.locations.models import Location
+from locations.models import Location
 
 class Speedtest(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='speed_tests')

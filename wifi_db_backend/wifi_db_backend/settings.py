@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'locations',
+    'users',
+    'speedtests',
 ]
 
 MIDDLEWARE = [
@@ -139,5 +142,5 @@ STATICFILES_DIRS = (
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH')
-GEOS_LIBRARY_PATH = os.getenv('GEOS_LIBRARY_PATH')
+GDAL_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\gdal308.dll'
+GEOS_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\geos_c.dll'

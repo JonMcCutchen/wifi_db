@@ -6,6 +6,6 @@ router = DefaultRouter()
 router.register(r'locations', LocationViewSet)
 router.register(r'speedtests', SpeedtestViewSet)
 
-urlpatters = [
+urlpatterns = [
     path('', include(router.urls)),
 ]
