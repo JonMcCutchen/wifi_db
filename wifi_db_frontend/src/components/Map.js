@@ -23,7 +23,7 @@ const Map = ({ data }) => {
     }, [map, data]);
 
     return (
-        <MapContainer center={[51.505, -0.09]} zoom={13} whenCreated={setMap}>
+        <MapContainer center={[35, -85]} zoom={2} whenCreated={setMap}>
             <TileLayer
                 url="https://tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token=9GoEKZMG5x6KV84c7NLNq88Vwv5YkOUHXOTtvQUfIWxK45VY2bB61cbF0Qi2sy1o" 
                 attribution= '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

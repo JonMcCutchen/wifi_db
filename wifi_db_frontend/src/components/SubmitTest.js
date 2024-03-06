@@ -5,6 +5,7 @@ function SubmitTest() {
         downloadSpeed: '',
         uploadSpeed: '',
         ping: '',
+        placeName: '',
         location: ''
     });
 

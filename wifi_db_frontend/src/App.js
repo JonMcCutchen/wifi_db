@@ -18,21 +18,6 @@ function App() {
             <li>
               <Link to="/submit">Submit</Link>
             </li>
-            {isAuthenticated ? (
-              <li>
-                <Link to="/profile">Profile</Link> {/* Adjust if you have a specific profile component */}
-              </li>
-            ) : null
-            }
-            {isAuthenticated ? (
-              <li>
-                {/* <button onClick={handleLogout}>Logout</button> */}
-              </li>
-            ) : (
-              <li>
-                <Link to="/login">Login</Link> {/* Adjust if you have a specific login component */}
-              </li>
-            )}
           </ul>
         </nav>
 
