@@ -1,24 +1,48 @@
-import logo from './logo.svg';
+import SubmitTest from './components/SubmitTest';
+import Home from './components/Home';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 function App() {
+  const isAuthenticated = false; // This should be determined based on your auth logic
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/submit">Submit</Link>
+            </li>
+            {isAuthenticated ? (
+              <li>
+                <Link to="/profile">Profile</Link> {/* Adjust if you have a specific profile component */}
+              </li>
+            ) : null
+            }
+            {isAuthenticated ? (
+              <li>
+                {/* <button onClick={handleLogout}>Logout</button> */}
+              </li>
+            ) : (
+              <li>
+                <Link to="/login">Login</Link> {/* Adjust if you have a specific login component */}
+              </li>
+            )}
+          </ul>
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/submit" element={<SubmitTest />} />
+          {/* Add other routes as needed */}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
