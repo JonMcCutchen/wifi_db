@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 function SubmitTest() {
     const [speedTest, setSpeedTest] = useState({
@@ -16,12 +17,6 @@ function SubmitTest() {
         })
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log(speedTest);
-        // Add api call to post to django
-    }
-
     const locateUser = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
@@ -33,7 +28,79 @@ function SubmitTest() {
         }
     };
 
-    return(
+    const getMatchingLocation = (placeName, latitude, longitude) => {
+        return axios.get(`http://localhost:8000/api/locations/get_matching_location/?place_name=${encodeURIComponent(placeName)}&latitude=${latitude}&longitude=${longitude}`)
+            .then(response => {
+                // If a location is found, return its details
+                return response.data;
+            })
+            .catch(error => {
+                // If no location is found, create a new one and return its details
+                if (error.response && error.response.status === 404) {
+                    return createLocation(placeName, latitude, longitude);
+                } else {
+                    console.error('Error fetching the location:', error);
+                    throw error;
+                }
+            });
+    };
+
+    const createLocation = async (placeName, latitude, longitude) => {
+        try {
+            const response = await axios.post('http://localhost:8000/api/locations/', {
+                place_name: placeName,
+                coordinates: `SRID=4326;POINT (${longitude} ${latitude})`
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating the location:', error);
+            throw error;
+        }
+    };
+
+    const parseLocation = (location) => {
+        if (location.startsWith("Lat:")) {
+            // Parsing the "Lat: {}, Long: {}" format
+            const coords = location.match(/Lat: (.*), Long: (.*)/);
+            if (coords && coords.length === 3) {
+                const latitude = coords[1];
+                const longitude = coords[2];
+                return { latitude, longitude };
+            }
+        } else {
+            // Handle the placeName (address) scenario
+            // Since you can't directly convert an address to a PointField without a geocoding service,
+            // you would typically call an external API here to convert the address to coordinates.
+            // For this example, let's assume we return a placeholder.
+            return { latitude: '0', longitude: '0' };
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const { latitude, longitude } = parseLocation(speedTest.location);
+
+        getMatchingLocation(speedTest.placeName, latitude, longitude).then(location => {
+            // Use the location ID to submit the speed test
+            axios.post('http://127.0.0.1:8000/api/speedtests/', {
+                download_speed: speedTest.downloadSpeed,
+                upload_speed: speedTest.uploadSpeed,
+                ping: speedTest.ping,
+                location: location.id  // Use the location ID
+            })
+                .then(response => {
+                    console.log(response);
+                    // Handle response / notify user of success
+                })
+                .catch(error => {
+                    console.error('There was an error!', error);
+                    // Handle error / notify user
+                });
+        });
+    }
+
+    return (
         <div class='speedtest'>
             <h1>Submit your Speed Test Results</h1>
             <form onSubmit={handleSubmit}>
@@ -42,7 +109,7 @@ function SubmitTest() {
                     name="downloadSpeed"
                     placeholder="Download Speed (Mbps)"
                     value={speedTest.downloadSpeed}
-                    onChange={handleChange} 
+                    onChange={handleChange}
                 />
                 <input
                     type="text"
@@ -58,9 +125,9 @@ function SubmitTest() {
                     value={speedTest.ping}
                     onChange={handleChange}
                 />
-                <input 
+                <input
                     type="text"
-                    name="place-name"
+                    name="placeName"
                     placeholder="Place Name"
                     value={speedTest.placeName}
                     onChange={handleChange}

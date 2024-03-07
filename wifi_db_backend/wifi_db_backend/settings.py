@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'locations',
-    'users',
     'speedtests',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',   
 ]
 
 ROOT_URLCONF = 'wifi_db_backend.urls'
@@ -82,11 +83,14 @@ WSGI_APPLICATION = 'wifi_db_backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,  # Recommended to use persistent connections
-        ssl_require=True   # Enforce SSL connection
-    )
+     'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'wifi_db',
+        'USER': '<username>',
+        'PASSWORD': '<password>',
+        'HOST': 'localhost',
+        'PORT': '5433',  # Leave blank to use the default port
+    }
 }
 
 
@@ -142,8 +146,14 @@ STATICFILES_DIRS = (
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# GDAL_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\gdal308.dll'
-# GEOS_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\geos_c.dll'
 
-GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
-GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+# local settings
+GDAL_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\gdal308.dll'
+GEOS_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\geos_c.dll'
+
+# GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+# GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # The origin for your React app in development
+]
