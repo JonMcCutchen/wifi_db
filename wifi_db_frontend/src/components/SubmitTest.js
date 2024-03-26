@@ -10,11 +10,55 @@ function SubmitTest() {
         location: ''
     });
 
+    const [errors, setErrors] = useState({});
+
     const handleChange = (e) => {
         setSpeedTest({
             ...speedTest,
             [e.target.name]: e.target.value
         })
+    }
+
+    const validateForm = () => {
+        let errors = {};
+        let isValid = true;
+
+        if(!speedTest.downloadSpeed) {
+            errors.downloadSpeed = "Download Speed is required";
+            isValid = false;
+        } else if (isNaN(speedTest.downloadSpeed) || speedTest.downloadSpeed <= 0 || speedTest.downloadSpeed > 5000) {
+            errors.downloadSpeed = "Download Speed must be a positive number less than 5000";
+            isValid = false;
+        }
+
+        if(!speedTest.uploadSpeed) {
+            errors.uploadSpeed = "Upload Speed is required";
+            isValid = false;
+        } else if (isNaN(speedTest.uploadSpeed) || speedTest.uploadSpeed <= 0 || speedTest.uploadSpeed > 5000) {
+            errors.uploadSpeed = "Upload Speed must be a positive number less than 5000";
+            isValid = false;
+        } 
+
+        if(!speedTest.ping) {
+            errors.ping = "Ping is required";
+            isValid = false;
+        } else if (isNaN(speedTest.ping) || speedTest.ping <= 0 || speedTest.ping > 1000) {
+            errors.ping = "Ping must be a positive number less than 1000";
+            isValid = false;
+        }
+
+        if(!speedTest.placeName) {
+            errors.placeName = "Place Name is required";
+            isValid = false;
+        }
+
+        if(!speedTest.location) {
+            errors.location = "Location is required";
+            isValid = false;
+        }
+
+        setErrors(errors);
+        return isValid;
     }
 
     const locateUser = () => {
@@ -49,7 +93,7 @@ function SubmitTest() {
         try {
             const response = await axios.post('http://localhost:8000/api/locations/', {
                 place_name: placeName,
-                coordinates: `SRID=4326;POINT (${longitude} ${latitude})`
+                coordinates: `SRID=4326;POINT (${latitude} ${longitude})`
             });
             return response.data;
         } catch (error) {
@@ -58,7 +102,7 @@ function SubmitTest() {
         }
     };
 
-    const parseLocation = (location) => {
+    const parseLocation = async(location) => {
         if (location.startsWith("Lat:")) {
             // Parsing the "Lat: {}, Long: {}" format
             const coords = location.match(/Lat: (.*), Long: (.*)/);
@@ -68,40 +112,66 @@ function SubmitTest() {
                 return { latitude, longitude };
             }
         } else {
-            // Handle the placeName (address) scenario
-            // Since you can't directly convert an address to a PointField without a geocoding service,
-            // you would typically call an external API here to convert the address to coordinates.
-            // For this example, let's assume we return a placeholder.
-            return { latitude: '0', longitude: '0' };
+           try {
+            const request = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`
+            const response = await axios.get(request);
+            
+            if (response.data && response.data.length > 0) {
+                const {lat, lon } = response.data[0];
+                return { latitude: lat, longitude: lon };
+            } else {
+                throw new Error('No location found for the given address');
+            }
+           } catch (error) {
+            console.error('Error fetching the location:', error);
+           }
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const { latitude, longitude } = parseLocation(speedTest.location);
-
-        getMatchingLocation(speedTest.placeName, latitude, longitude).then(location => {
-            // Use the location ID to submit the speed test
-            axios.post('http://127.0.0.1:8000/api/speedtests/', {
-                download_speed: speedTest.downloadSpeed,
-                upload_speed: speedTest.uploadSpeed,
-                ping: speedTest.ping,
-                location: location.id  // Use the location ID
-            })
-                .then(response => {
-                    console.log(response);
+        if (validateForm()) {
+            try {
+                const { latitude, longitude } = await parseLocation(speedTest.location);
+    
+                try {
+                    const location = await getMatchingLocation(speedTest.placeName, latitude, longitude);
+                    // Use the location ID to submit the speed test
+                    await axios.post('http://127.0.0.1:8000/api/speedtests/', {
+                        download_speed: speedTest.downloadSpeed,
+                        upload_speed: speedTest.uploadSpeed,
+                        ping: speedTest.ping,
+                        location: location.id  // Use the location ID
+                    });
+                    console.log('Speed test submitted successfully');
                     // Handle response / notify user of success
-                })
-                .catch(error => {
-                    console.error('There was an error!', error);
-                    // Handle error / notify user
-                });
-        });
-    }
+                } catch (error) {
+                    if (error.response && error.response.status === 404) {
+                        // Location not found, create a new location
+                        const newLocation = await createLocation(speedTest.placeName, latitude, longitude);
+                        // Use the new location ID to submit the speed test
+                        await axios.post('http://127.0.0.1:8000/api/speedtests/', {
+                            download_speed: speedTest.downloadSpeed,
+                            upload_speed: speedTest.uploadSpeed,
+                            ping: speedTest.ping,
+                            location: newLocation.id  // Use the new location ID
+                        });
+                        console.log('Speed test submitted successfully with a new location');
+                        // Handle response / notify user of success
+                    } else {
+                        console.error('Error submitting the speed test:', error);
+                        // Handle error / notify user
+                    }
+                }
+            } catch (error) {
+                console.error('Error parsing the location:', error);
+                // Handle error / notify user
+            }
+        }
+    };
 
     return (
-        <div class='speedtest'>
+        <div className='speedtest'>
             <h1>Submit your Speed Test Results</h1>
             <form onSubmit={handleSubmit}>
                 <input
@@ -111,6 +181,7 @@ function SubmitTest() {
                     value={speedTest.downloadSpeed}
                     onChange={handleChange}
                 />
+                {errors.downloadSpeed && <span className="error">{errors.downloadSpeed}</span>}
                 <input
                     type="text"
                     name="uploadSpeed"
@@ -118,6 +189,7 @@ function SubmitTest() {
                     value={speedTest.uploadSpeed}
                     onChange={handleChange}
                 />
+                {errors.uploadSpeed && <span className="error">{errors.uploadSpeed}</span>}
                 <input
                     type="text"
                     name="ping"
@@ -125,6 +197,7 @@ function SubmitTest() {
                     value={speedTest.ping}
                     onChange={handleChange}
                 />
+                {errors.ping && <span className="error">{errors.ping}</span>}
                 <input
                     type="text"
                     name="placeName"
@@ -132,13 +205,15 @@ function SubmitTest() {
                     value={speedTest.placeName}
                     onChange={handleChange}
                 />
+                {errors.placeName && <span className="error">{errors.placeName}</span>}
                 <input
                     type="text"
                     name="location"
-                    placeholder="Location"
+                    placeholder="Address (or 'Locate Me')"
                     value={speedTest.location}
                     onChange={handleChange}
                 />
+                {errors.location && <span className="error">{errors.location}</span>}
                 <button type="button" onClick={locateUser}>Locate Me</button>
                 <button type="submit">Submit</button>
             </form>
