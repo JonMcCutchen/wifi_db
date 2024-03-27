@@ -12,7 +12,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 import dj_database_url
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-95)9je3nd0h*rlu6^mwmu!-&sg(moe4jvu^&ib6#2wt=p4$uu7'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -85,11 +88,11 @@ WSGI_APPLICATION = 'wifi_db_backend.wsgi.application'
 DATABASES = {
      'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'wifi_db',
-        'USER': '<username>',
-        'PASSWORD': '<password>',
-        'HOST': 'localhost',
-        'PORT': '5433',  # Leave blank to use the default port
+        'NAME': os.getenv('LOCAL_DB_NAME'),
+        'USER': os.getenv('LOCAL_DB_USER'),
+        'PASSWORD': os.getenv('LOCAL_DB_PASSWORD'),
+        'HOST': os.getenv('LOCAL_DB_HOST'),
+        'PORT': os.getenv('LOCAL_DB_PORT'),
     }
 }
 
@@ -124,12 +127,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 
 STATIC_URL = 'static/'
 
@@ -140,19 +141,14 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # local settings
-GDAL_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\gdal308.dll'
-GEOS_LIBRARY_PATH = r'C:\\OSGeo4W\\bin\\geos_c.dll'
-
-# GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
-# GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+GDAL_LIBRARY_PATH = os.getenv('LOCAL_GDAL_LIBRARY_PATH')
+GEOS_LIBRARY_PATH = os.getenv('LOCAL_GEOS_LIBRARY_PATH')
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # The origin for your React app in development
