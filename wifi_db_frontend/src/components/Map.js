@@ -8,7 +8,7 @@ const Map = () => {
     useEffect(() => {
         axios.get('http://localhost:8000/api/locations/')
             .then(response => {
-                setLocations(response.data);  // Directly set the locations with the included speed test data
+                setLocations(response.data); 
             })
             .catch(error => {
                 console.error('Error fetching locations:', error);
@@ -25,7 +25,7 @@ const Map = () => {
     };
 
     return (
-        <MapContainer center={[35, -85]} zoom={2}>
+        <MapContainer center={[35, -85]} zoom={2} worldCopyJump>
             <TileLayer
                 url="https://tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token=9GoEKZMG5x6KV84c7NLNq88Vwv5YkOUHXOTtvQUfIWxK45VY2bB61cbF0Qi2sy1o"
                 attribution='<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
