@@ -26,10 +26,10 @@ const Map = () => {
 
     return (
         <MapContainer center={[35, -85]} zoom={2} worldCopyJump>
-            <TileLayer
-                url="https://tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token=9GoEKZMG5x6KV84c7NLNq88Vwv5YkOUHXOTtvQUfIWxK45VY2bB61cbF0Qi2sy1o"
+            {process.env.REACT_APP_JAWG_ACCESS_TOKEN && <TileLayer
+                url={`https://tile.jawg.io/jawg-matrix/{z}/{x}/{y}{r}.png?access-token=${process.env.REACT_APP_JAWG_ACCESS_TOKEN || ""}`}
                 attribution='<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
+            />}
             {locations.map((location, index) => {
                 const { latitude, longitude } = parseCoordinates(location.coordinates);
                 return (
